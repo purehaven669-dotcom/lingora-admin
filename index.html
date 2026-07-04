@@ -233,7 +233,8 @@ function doLogin(){
   const pass = document.getElementById('loginPassword').value;
   document.getElementById('loginError').textContent = '';
   auth.signInWithEmailAndPassword(email, pass).catch(err=>{
-    document.getElementById('loginError').textContent = 'ورود ناموفق: ایمیل یا رمز اشتباه است.';
+        document.getElementById('loginError').textContent = 'خطا: ' + err.code + ' - ' + err.message;
+
   });
 }
 function doLogout(){ auth.signOut(); }
