@@ -183,6 +183,18 @@
 
   <div class="wrap">
     <div class="section-title"><span class="tick"></span> فهرست درس‌ها</div>
+    <div class="field" style="max-width:280px;">
+      <label>فیلتر بر اساس مسیر زبانی</label>
+      <select id="pairFilter" onchange="renderLessonList()">
+        <option value="">همه مسیرها</option>
+        <option value="dari-english">دری ← انگلیسی</option>
+        <option value="dari-german">دری ← آلمانی</option>
+        <option value="english-dari">انگلیسی ← دری</option>
+        <option value="english-german">انگلیسی ← آلمانی</option>
+        <option value="german-dari">آلمانی ← دری</option>
+        <option value="german-english">آلمانی ← انگلیسی</option>
+      </select>
+    </div>
     <div id="lessonList"></div>
 
     <div id="formArea"></div>
@@ -233,8 +245,7 @@ function doLogin(){
   const pass = document.getElementById('loginPassword').value;
   document.getElementById('loginError').textContent = '';
   auth.signInWithEmailAndPassword(email, pass).catch(err=>{
-        document.getElementById('loginError').textContent = 'خطا: ' + err.code + ' - ' + err.message;
-
+    document.getElementById('loginError').textContent = 'ورود ناموفق: ایمیل یا رمز اشتباه است.';
   });
 }
 function doLogout(){ auth.signOut(); }
@@ -266,15 +277,21 @@ function loadLessons(){
 
 function renderLessonList(){
   const wrap = document.getElementById('lessonList');
-  if(lessons.length === 0){
-    wrap.innerHTML = '<div class="empty-state">هنوز درسی اضافه نشده. با دکمه «+ درس جدید» شروع کن.</div>';
+  const filterVal = document.getElementById('pairFilter')?.value || '';
+  let filtered = lessons;
+  if(filterVal){
+    const [expl, lang] = filterVal.split('-');
+    filtered = lessons.filter(l => l.explanationLanguage===expl && l.language===lang);
+  }
+  if(filtered.length === 0){
+    wrap.innerHTML = '<div class="empty-state">هنوز درسی در این مسیر اضافه نشده. با دکمه «+ درس جدید» شروع کن.</div>';
     return;
   }
-  wrap.innerHTML = lessons.map(l=>`
+  wrap.innerHTML = filtered.map(l=>`
     <div class="lesson-card ${l.status==='draft'?'draft':''}">
       <div class="info">
         <b>${escapeHtml(l.title||'(بدون عنوان)')}</b>
-        <span>${l.level||''} · ${l.language==='german'?'آلمانی':'انگلیسی'} · ${escapeHtml(l.category||'')} · شماره ${l.order??''}</span>
+        <span>${({german:'آلمانی',english:'انگلیسی',dari:'دری'})[l.explanationLanguage]||'؟'} ← ${({german:'آلمانی',english:'انگلیسی',dari:'دری'})[l.language]||'؟'} · ${l.level||''} · ${escapeHtml(l.category||'')} · شماره ${l.order??''}</span>
       </div>
       <div class="lesson-actions">
         <span class="badge ${l.status==='draft'?'draft':''}">${l.status==='draft'?'پیش‌نویس':'منتشرشده'}</span>
@@ -353,17 +370,31 @@ function renderForm(l){
       </div>
 
       <div class="row2">
-        <div class="field"><label>زبان</label>
-          <select id="f_language" onchange="toggleArticleFields()">
-            <option value="german" ${isGerman?'selected':''}>آلمانی</option>
-            <option value="english" ${!isGerman?'selected':''}>انگلیسی</option>
+        <div class="field"><label>زبانی که آموزش داده می‌شود (هدف)</label>
+          <select id="f_language" onchange="toggleArticleFields(); validateLangPair();">
+            <option value="german" ${l.language==='german'?'selected':''}>آلمانی</option>
+            <option value="english" ${l.language==='english'?'selected':''}>انگلیسی</option>
+            <option value="dari" ${l.language==='dari'?'selected':''}>دری</option>
           </select></div>
+        <div class="field"><label>زبان مادری کاربر (این درس برای چه کسانی است)</label>
+          <select id="f_explanationLanguage" onchange="validateLangPair();">
+            <option value="dari" ${(l.explanationLanguage||'dari')==='dari'?'selected':''}>دری</option>
+            <option value="english" ${l.explanationLanguage==='english'?'selected':''}>انگلیسی</option>
+            <option value="german" ${l.explanationLanguage==='german'?'selected':''}>آلمانی</option>
+          </select></div>
+      </div>
+      <div id="langPairWarning" style="display:none;color:var(--danger);font-size:13px;margin-bottom:10px;">
+        ⚠️ زبان مادری و زبان هدف نمی‌توانند یکی باشند.
+      </div>
+
+      <div class="row2">
         <div class="field"><label>سطح</label>
           <select id="f_level">
             <option value="A0" ${l.level==='A0'?'selected':''}>A0 (رایگان)</option>
             <option value="A1" ${l.level==='A1'?'selected':''}>A1 (پولی)</option>
             <option value="A2" ${l.level==='A2'?'selected':''}>A2 (پولی)</option>
           </select></div>
+        <div></div>
       </div>
 
       <div class="row2">
@@ -427,6 +458,21 @@ function closeForm(){
   document.getElementById('formArea').innerHTML = '';
 }
 
+function validateLangPair(){
+  const a = document.getElementById('f_language')?.value;
+  const b = document.getElementById('f_explanationLanguage')?.value;
+  const warn = document.getElementById('langPairWarning');
+  if(!warn) return true;
+  if(a && b && a === b){
+    warn.style.display = 'block';
+    return false;
+  }
+  warn.style.display = 'none';
+  return true;
+}
+
+const LANG_LABEL = {german:'آلمانی', english:'انگلیسی', dari:'دری'};
+
 /* ---- لغات ---- */
 function addVocabRow(){
   vocabRows.push({word:'', article:'', pronunciation:'', meaningDari:'', example:''});
@@ -454,7 +500,7 @@ function renderVocabRows(){
       <div class="row2">
         <div class="field"><label>تلفظ</label>
           <input value="${escapeHtml(v.pronunciation)}" onchange="vocabRows[${i}].pronunciation=this.value"></div>
-        <div class="field"><label>معنی به دری</label>
+        <div class="field"><label>معنی (به زبان توضیحات)</label>
           <input value="${escapeHtml(v.meaningDari)}" onchange="vocabRows[${i}].meaningDari=this.value"></div>
       </div>
       <div class="field"><label>جمله مثال</label>
@@ -498,6 +544,7 @@ function saveLesson(){
     title: document.getElementById('f_title').value.trim(),
     order: Number(document.getElementById('f_order').value) || 0,
     language: document.getElementById('f_language').value,
+    explanationLanguage: document.getElementById('f_explanationLanguage').value,
     level: document.getElementById('f_level').value,
     category: document.getElementById('f_category').value.trim(),
     status: document.getElementById('f_status').value,
@@ -523,6 +570,10 @@ function saveLesson(){
 
   if(!data.title){
     showToast('عنوان درس را وارد کن');
+    return;
+  }
+  if(data.language === data.explanationLanguage){
+    showToast('زبان مادری و زبان هدف نمی‌توانند یکی باشند');
     return;
   }
 
