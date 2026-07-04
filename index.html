@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>پنل مدیریت درس‌ها</title>
+<link rel="icon" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lingora Admin">
+<meta name="theme-color" content="#163963">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -156,7 +162,7 @@
 <!-- ===== LOGIN SCREEN ===== -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="tile-rule" style="background:repeating-linear-gradient(45deg,var(--ochre) 0 6px,var(--turquoise) 6px 12px);height:4px;width:56px;border-radius:2px;margin-bottom:14px;"></div>
+    <img src="icon-192.png" alt="Lingora" style="width:56px;height:56px;border-radius:14px;margin-bottom:14px;">
     <h2>ورود به پنل مدیریت</h2>
     <div class="field">
       <label>ایمیل</label>
@@ -174,9 +180,12 @@
 <!-- ===== MAIN APP ===== -->
 <div id="app" class="hidden">
   <div class="topbar">
-    <div>
-      <h1>پنل مدیریت درس‌ها</h1>
-      <div class="tile-rule"></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="icon-192.png" alt="Lingora" style="width:32px;height:32px;border-radius:8px;">
+      <div>
+        <h1>پنل مدیریت درس‌ها</h1>
+        <div class="tile-rule"></div>
+      </div>
     </div>
     <button id="logoutBtn" onclick="doLogout()">خروج</button>
   </div>
