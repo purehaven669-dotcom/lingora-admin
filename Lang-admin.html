@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lingora Admin Panel</title>
+
+<!-- Icons -->
+<link rel="icon" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- PWA / "installed app" behavior (removes browser address bar when added to Home Screen) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#163963">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Lingora">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lingora">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sand:#FAF6EF;
+    --ink:#23272B;
+    --lapis:#1F4E8C;
+    --lapis-dark:#163963;
+    --turquoise:#2E9E8F;
+    --ochre:#C08A3E;
+    --line:#E4DECF;
+    --danger:#B3452F;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:var(--sand);
+    color:var(--ink);
+    min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .topbar{
+    background:var(--lapis-dark);
+    color:#fff;
+    padding:16px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky;
+    top:0;
+    z-index:20;
+    box-shadow:0 2px 10px rgba(0,0,0,.15);
+  }
+  .topbar h1{font-size:17px;margin:0;font-weight:600;}
+  .topbar .tile-rule{
+    height:4px;width:56px;
+    background:repeating-linear-gradient(45deg,var(--ochre) 0 6px,var(--turquoise) 6px 12px);
+    border-radius:2px;margin-top:4px;
+  }
+  #logoutBtn{
+    background:transparent;border:1px solid rgba(255,255,255,.4);
+    color:#fff;padding:6px 14px;border-radius:8px;font-family:inherit;
+    font-size:13px;cursor:pointer;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:18px 16px 80px;}
+
+  /* Login */
+  #loginScreen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .login-card{
+    background:var(--card);border-radius:16px;padding:32px 26px;
+    max-width:360px;width:100%;box-shadow:0 8px 30px rgba(31,78,140,.12);
+    border-top:4px solid var(--ochre);
+  }
+  .login-card h2{margin-top:0;color:var(--lapis-dark);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;color:#5b5f63;margin-bottom:6px;font-weight:500;}
+  .field input,.field select,.field textarea{
+    width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;
+    font-family:inherit;font-size:14px;background:#fff;color:var(--ink);
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    outline:none;border-color:var(--lapis);
+  }
+  textarea{resize:vertical;min-height:70px;}
+  .btn{
+    display:inline-block;background:var(--lapis);color:#fff;border:none;
+    padding:11px 20px;border-radius:9px;font-family:inherit;font-size:14px;
+    font-weight:600;cursor:pointer;
+  }
+  .btn:hover{background:var(--lapis-dark);}
+  .btn.secondary{background:#fff;color:var(--lapis);border:1.5px solid var(--lapis);}
+  .btn.secondary:hover{background:#eef3f9;}
+  .btn.danger{background:#fff;color:var(--danger);border:1.5px solid var(--danger);}
+  .btn.danger:hover{background:#fbeae6;}
+  .btn.small{padding:6px 12px;font-size:12.5px;}
+  .btn.block{width:100%;}
+  #loginError{color:var(--danger);font-size:13px;margin-top:8px;min-height:18px;}
+  .password-wrap{position:relative;}
+  .password-wrap input{padding-right:44px;}
+  .toggle-eye{
+    position:absolute;top:50%;right:10px;transform:translateY(-50%);
+    background:none;border:none;cursor:pointer;color:#77808a;font-size:13px;
+    font-family:inherit;padding:4px 6px;
+  }
+  .toggle-eye:hover{color:var(--lapis);}
+  .remember-row{
+    display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px;color:#5b5f63;
+  }
+  .remember-row input{width:auto;}
+
+  /* Lesson list */
+  .section-title{
+    font-size:14px;color:var(--lapis-dark);font-weight:700;margin:26px 0 12px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .section-title .tick{width:14px;height:14px;border-radius:3px;background:var(--turquoise);}
+  .lesson-card{
+    background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    border-left:4px solid var(--turquoise);
+  }
+  .lesson-card.draft{border-left-color:var(--ochre);}
+  .lesson-card .info b{display:block;font-size:15px;}
+  .lesson-card .info span{font-size:12.5px;color:#77808a;}
+  .badge{
+    font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;
+    background:#e6f4f1;color:var(--turquoise);
+  }
+  .badge.draft{background:#fbf1e2;color:var(--ochre);}
+  .lesson-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+  /* Section tabs (Lessons / Students) */
+  .section-tabs{display:flex;gap:8px;margin-bottom:18px;}
+  .tab-btn{
+    flex:1;background:#fff;border:1.5px solid var(--line);color:var(--ink);
+    padding:10px;border-radius:10px;font-family:inherit;font-size:13.5px;font-weight:600;
+    cursor:pointer;
+  }
+  .tab-btn.active{background:var(--lapis-dark);border-color:var(--lapis-dark);color:#fff;}
+  .progress-track{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--turquoise);}
+
+  /* Form */
+  .form-card{
+    background:var(--card);border-radius:14px;padding:20px;margin-top:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,.05);
+  }
+  .form-card h3{
+    margin-top:0;color:var(--lapis-dark);font-size:16px;
+    border-bottom:2px solid var(--line);padding-bottom:10px;margin-bottom:16px;
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:480px){.row2{grid-template-columns:1fr;}}
+  .subitem{
+    background:var(--sand);border-radius:10px;padding:12px;margin-bottom:10px;
+    border:1px solid var(--line);position:relative;
+  }
+  .subitem .remove-x{
+    position:absolute;top:8px;right:8px;background:none;border:none;
+    color:var(--danger);cursor:pointer;font-size:16px;line-height:1;
+  }
+  .add-row-btn{
+    background:none;border:1.5px dashed var(--lapis);color:var(--lapis);
+    padding:9px;border-radius:9px;width:100%;font-family:inherit;font-size:13.5px;
+    cursor:pointer;margin-bottom:16px;
+  }
+  .add-row-btn:hover{background:#eef3f9;}
+  .fab-new{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    background:var(--lapis);color:#fff;border:none;padding:14px 26px;
+    border-radius:30px;font-family:inherit;font-size:14px;font-weight:700;
+    box-shadow:0 6px 20px rgba(31,78,140,.35);cursor:pointer;z-index:15;
+  }
+  .toast{
+    position:fixed;top:70px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 20px;border-radius:10px;
+    font-size:13.5px;z-index:50;opacity:0;transition:opacity .25s;pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+  .hidden{display:none !important;}
+  .empty-state{
+    text-align:center;color:#8a8f94;padding:40px 20px;font-size:14px;
+  }
+  .form-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <img src="icon-192.png" alt="Lingora" style="width:56px;height:56px;border-radius:14px;margin-bottom:14px;">
+    <h2>Sign in to Admin Panel</h2>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="loginPassword" placeholder="••••••••">
+        <button type="button" class="toggle-eye" id="togglePasswordBtn" onclick="togglePasswordVisibility()">Show</button>
+      </div>
+    </div>
+    <label class="remember-row">
+      <input type="checkbox" id="rememberMe"> Remember me on this device
+    </label>
+    <button class="btn block" onclick="doLogin()">Sign In</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="icon-192.png" alt="Lingora" style="width:32px;height:32px;border-radius:8px;">
+      <div>
+        <h1>Lingora Admin Panel</h1>
+        <div class="tile-rule"></div>
+      </div>
+    </div>
+    <button id="logoutBtn" onclick="doLogout()">Sign Out</button>
+  </div>
+
+  <div class="wrap">
+    <div id="sectionTabs"></div>
+    <div id="mainArea"></div>
+
+    <div id="formArea"></div>
+  </div>
+
+  <button class="fab-new hidden" id="fabNew" onclick="openNewLessonForm()">+ New Lesson</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK (compat, no build tools needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<script>
+/* =====================================================================
+   1) Firebase configuration
+   Get these values from Firebase Console:
+   Project settings -> General -> Your apps -> SDK setup and configuration
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBvkz9wxSd9IOyVRc58oSsPsfTEc-gW8Is",
+  authDomain: "lingora-01.firebaseapp.com",
+  projectId: "lingora-01",
+  storageBucket: "lingora-01.firebasestorage.app",
+  messagingSenderId: "1086374209915",
+  appId: "1:1086374209915:web:cfeb42a88e240bd04535de"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* =====================================================================
+   2) App state
+   ===================================================================== */
+let lessons = [];        // all lessons loaded from Firestore
+let editingId = null;    // id of the lesson currently being edited, if any
+let vocabRows = [];      // vocabulary rows in the current form
+let exerciseRows = [];   // exercise rows in the current form
+
+/* Folder-style navigation: home screen, or inside a language path */
+let currentView = 'home';      // 'home' | 'pair'
+let currentPair = null;        // {expl:'dari', lang:'english'}
+let currentLevel = 'A0';       // 'A0' | 'A1' | 'A2'
+
+/* Top-level section: Lessons or Students */
+let currentSection = 'lessons'; // 'lessons' | 'students'
+let students = [];               // all students loaded from Firestore ("users" collection)
+let studentSearchQuery = '';
+let selectedStudentId = null;    // id of the student being viewed in detail
+
+const LANG_LABEL = {german:'German', english:'English', dari:'Dari'};
+const ALL_PAIRS = [
+  {expl:'dari', lang:'english'}, {expl:'english', lang:'dari'},
+  {expl:'dari', lang:'german'},  {expl:'german', lang:'dari'},
+  {expl:'english', lang:'german'}, {expl:'german', lang:'english'}
+];
+function pairKey(p){ return p.expl + '-' + p.lang; }
+function pairLabel(p){ return LANG_LABEL[p.expl] + ' -> ' + LANG_LABEL[p.lang]; }
+
+/* =====================================================================
+   3) Sign in / Sign out + Remember me + Show password
+   ===================================================================== */
+const REMEMBER_KEY = 'lingoraRememberedLogin';
+
+function togglePasswordVisibility(){
+  const pw = document.getElementById('loginPassword');
+  const btn = document.getElementById('togglePasswordBtn');
+  if(pw.type === 'password'){
+    pw.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    pw.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
+
+function loadRememberedLogin(){
+  try{
+    const raw = localStorage.getItem(REMEMBER_KEY);
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(data.email) document.getElementById('loginEmail').value = data.email;
+    if(data.password) document.getElementById('loginPassword').value = atob(data.password);
+    document.getElementById('rememberMe').checked = true;
+  }catch(e){ /* ignore malformed storage */ }
+}
+
+function saveRememberedLogin(email, password, remember){
+  if(remember){
+    localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, password: btoa(password) }));
+  } else {
+    localStorage.removeItem(REMEMBER_KEY);
+  }
+}
+
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const remember = document.getElementById('rememberMe').checked;
+  document.getElementById('loginError').textContent = '';
+
+  const persistence = remember
+    ? firebase.auth.Auth.Persistence.LOCAL
+    : firebase.auth.Auth.Persistence.SESSION;
+
+  auth.setPersistence(persistence)
+    .then(()=> auth.signInWithEmailAndPassword(email, pass))
+    .then(()=>{
+      saveRememberedLogin(email, pass, remember);
+    })
+    .catch(err=>{
+      document.getElementById('loginError').textContent = 'Sign in failed: incorrect email or password.';
+    });
+}
+function doLogout(){ auth.signOut(); }
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    loadLessons();
+    loadStudents();
+  } else {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('app').classList.add('hidden');
+    loadRememberedLogin();
+  }
+});
+
+/* =====================================================================
+   4) Reading the lesson list
+   ===================================================================== */
+function loadLessons(){
+  db.collection('lessons').orderBy('order','asc').onSnapshot(snap=>{
+    lessons = [];
+    snap.forEach(doc=> lessons.push({ ...doc.data(), id: doc.id }));
+    renderMain();
+  }, err=>{
+    document.getElementById('mainArea').innerHTML =
+      '<div class="empty-state">Error reading data: '+err.message+'</div>';
+  });
+}
+
+function renderMain(){
+  document.getElementById('formArea').innerHTML = '';
+  document.getElementById('fabNew').classList.add('hidden');
+  renderSectionTabs();
+
+  if(currentSection === 'students'){
+    renderStudentsSection();
+    return;
+  }
+
+  if(currentView === 'home'){
+    renderHome();
+  } else {
+    document.getElementById('fabNew').classList.remove('hidden');
+    renderPairView();
+  }
+}
+
+function renderSectionTabs(){
+  const wrap = document.getElementById('sectionTabs');
+  if(!wrap) return;
+  wrap.innerHTML = `
+    <div class="section-tabs">
+      <button class="tab-btn ${currentSection==='lessons'?'active':''}" onclick="setSection('lessons')">📚 Lessons</button>
+      <button class="tab-btn ${currentSection==='students'?'active':''}" onclick="setSection('students')">🎓 Students</button>
+    </div>
+  `;
+}
+
+function setSection(section){
+  currentSection = section;
+  selectedStudentId = null;
+  renderMain();
+}
+
+/* ---- Home screen: folders for the 6 language paths ---- */
+function renderHome(){
+  const wrap = document.getElementById('mainArea');
+  wrap.innerHTML = `
+    <div class="section-title"><span class="tick"></span> Language Paths</div>
+    <div id="folderGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+  `;
+  const grid = document.getElementById('folderGrid');
+  grid.innerHTML = ALL_PAIRS.map(p=>{
+    const key = pairKey(p);
+    const count = lessons.filter(l=>l.explanationLanguage===p.expl && l.language===p.lang).length;
+    const published = lessons.filter(l=>l.explanationLanguage===p.expl && l.language===p.lang && l.status==='published').length;
+    return `
+      <div class="lesson-card" style="flex-direction:column;align-items:flex-start;cursor:pointer;" onclick="openPair('${p.expl}','${p.lang}')">
+        <b style="font-size:15px;">${pairLabel(p)}</b>
+        <span style="font-size:12.5px;color:#77808a;margin-top:4px;">${count} lessons - ${published} published</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function openPair(expl, lang){
+  currentPair = {expl, lang};
+  currentLevel = 'A0';
+  currentView = 'pair';
+  renderMain();
+}
+
+function goHome(){
+  currentView = 'home';
+  currentPair = null;
+  renderMain();
+}
+
+/* ---- Inside a path: A0 / A1 / A2 tabs ---- */
+function renderPairView(){
+  const wrap = document.getElementById('mainArea');
+  const levels = ['A0','A1','A2'];
+  wrap.innerHTML = `
+    <button class="btn secondary small" onclick="goHome()">&larr; Back to paths</button>
+    <div class="section-title" style="margin-top:16px;"><span class="tick"></span> ${pairLabel(currentPair)}</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      ${levels.map(lv=>`
+        <button class="btn ${lv===currentLevel?'':'secondary'} small" onclick="setLevel('${lv}')">${lv}${lv==='A0'?' (Free)':' (Paid)'}</button>
+      `).join('')}
+    </div>
+    <div id="lessonList"></div>
+  `;
+  renderLessonList();
+}
+
+function setLevel(lv){
+  currentLevel = lv;
+  renderPairView();
+}
+
+function renderLessonList(){
+  const wrap = document.getElementById('lessonList');
+  if(!wrap) return;
+  const filtered = lessons.filter(l =>
+    l.explanationLanguage===currentPair.expl &&
+    l.language===currentPair.lang &&
+    l.level===currentLevel
+  );
+  if(filtered.length === 0){
+    wrap.innerHTML = '<div class="empty-state">No lessons yet at this level. Start with the "+ New Lesson" button.</div>';
+    return;
+  }
+  wrap.innerHTML = filtered.map(l=>`
+    <div class="lesson-card ${l.status==='draft'?'draft':''}">
+      <div class="info">
+        <b>${escapeHtml(l.title||'(Untitled)')}</b>
+        <span>${escapeHtml(l.category||'')} - #${l.order??''}</span>
+      </div>
+      <div class="lesson-actions">
+        <span class="badge ${l.status==='draft'?'draft':''}">${l.status==='draft'?'Draft':'Published'}</span>
+        <button class="btn small secondary" onclick="editLesson('${l.id}')">Edit</button>
+        <button class="btn small secondary" onclick="duplicateLesson('${l.id}')">Duplicate</button>
+        <button class="btn small danger" onclick="deleteLesson('${l.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =====================================================================
+   4b) Students (read-only: profile, subscription, lesson progress)
+   ----------------------------------------------------------------------
+   Expected Firestore collection: "users" — one document per student,
+   ideally with the doc ID matching their Firebase Auth uid.
+
+   None of these fields are required — every reader below has a
+   fallback, so this screen will still work (showing "Free" / 0
+   progress) even before your student-facing app writes every field.
+   Recommended shape for new documents:
+
+     {
+       name: "Some Student",
+       email: "student@example.com",
+       createdAt: <Firestore server timestamp>,
+       subscription: {
+         plan: "free" | "premium",
+         status: "active" | "trial" | "expired",
+         expiresAt: <Firestore timestamp or null>
+       },
+       progress: {
+         completedLessonIds: ["<lessonDocId>", "<lessonDocId>", ...]
+       }
+     }
+   ===================================================================== */
+function loadStudents(){
+  db.collection('users').onSnapshot(snap=>{
+    students = [];
+    snap.forEach(doc=> students.push({ ...doc.data(), id: doc.id }));
+    if(currentSection === 'students') renderMain();
+  }, err=>{
+    const wrap = document.getElementById('mainArea');
+    if(wrap && currentSection === 'students'){
+      wrap.innerHTML = '<div class="empty-state">Error reading students: '+err.message+'</div>';
+    }
+  });
+}
+
+function studentField(obj, ...keys){
+  for(const k of keys){ if(obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k]; }
+  return undefined;
+}
+function studentName(u){ return studentField(u,'name','displayName','fullName') || '(No name)'; }
+function studentSubscription(u){
+  const sub = u.subscription || {};
+  return {
+    plan: studentField(sub,'plan') || studentField(u,'plan') || 'free',
+    status: studentField(sub,'status') || studentField(u,'status') || 'active',
+    expiresAt: sub.expiresAt || u.expiresAt || null
+  };
+}
+function studentCompletedIds(u){
+  return u.progress?.completedLessonIds || u.completedLessonIds || u.completedLessons || [];
+}
+function subscriptionBadge(sub){
+  if(sub.plan === 'premium' && sub.status === 'active') return {label:'Premium', cls:''};
+  if(sub.plan === 'premium' && sub.status === 'trial')  return {label:'Trial', cls:'draft'};
+  if(sub.plan === 'premium' && sub.status === 'expired')return {label:'Expired', cls:'draft'};
+  return {label:'Free', cls:'draft'};
+}
+function formatDate(ts){
+  try{
+    if(!ts) return '—';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    if(isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString();
+  }catch(e){ return '—'; }
+}
+
+function renderStudentsSection(){
+  if(selectedStudentId){
+    renderStudentDetail();
+  } else {
+    renderStudentsList();
+  }
+}
+
+function renderStudentsList(){
+  const wrap = document.getElementById('mainArea');
+  wrap.innerHTML = `
+    <div class="section-title"><span class="tick"></span> Students</div>
+    <div class="field" style="margin-bottom:14px;">
+      <input id="studentSearch" placeholder="Search by name or email..." value="${escapeHtml(studentSearchQuery)}">
+    </div>
+    <div id="studentListWrap"></div>
+  `;
+  renderStudentListItems();
+}
+
+function renderStudentListItems(){
+  const wrap = document.getElementById('studentListWrap');
+  if(!wrap) return;
+  const q = studentSearchQuery.trim().toLowerCase();
+  const filtered = students.filter(u=>{
+    if(!q) return true;
+    return studentName(u).toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q);
+  });
+  if(filtered.length === 0){
+    wrap.innerHTML = '<div class="empty-state">No students found.</div>';
+    return;
+  }
+  const totalPublished = lessons.filter(l=>l.status==='published').length;
+  wrap.innerHTML = filtered.map(u=>{
+    const sub = studentSubscription(u);
+    const badge = subscriptionBadge(sub);
+    const done = studentCompletedIds(u).filter(id=>
+      lessons.some(l=>l.id===id && l.status==='published')
+    ).length;
+    return `
+      <div class="lesson-card" style="cursor:pointer;" onclick="openStudentDetail('${u.id}')">
+        <div class="info">
+          <b>${escapeHtml(studentName(u))}</b>
+          <span>${escapeHtml(u.email||'')} · joined ${formatDate(u.createdAt)}</span>
+        </div>
+        <div class="lesson-actions">
+          <span class="badge ${badge.cls}">${badge.label}</span>
+          <span style="font-size:12.5px;color:#77808a;">${done}/${totalPublished} lessons</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openStudentDetail(id){
+  selectedStudentId = id;
+  renderMain();
+}
+function closeStudentDetail(){
+  selectedStudentId = null;
+  renderMain();
+}
+
+function renderStudentDetail(){
+  const u = students.find(x=>x.id===selectedStudentId);
+  const wrap = document.getElementById('mainArea');
+  if(!u){
+    wrap.innerHTML = '<div class="empty-state">Student not found.</div>';
+    return;
+  }
+  const sub = studentSubscription(u);
+  const badge = subscriptionBadge(sub);
+  const completedIds = studentCompletedIds(u);
+
+  const pairRows = ALL_PAIRS.map(p=>{
+    const pairLessons = lessons.filter(l=>
+      l.explanationLanguage===p.expl && l.language===p.lang && l.status==='published'
+    );
+    const total = pairLessons.length;
+    const done = pairLessons.filter(l=> completedIds.includes(l.id)).length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    return `
+      <div class="subitem">
+        <b style="font-size:13.5px;">${pairLabel(p)}</b>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+          <span style="font-size:12px;color:#77808a;white-space:nowrap;">${done}/${total}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  wrap.innerHTML = `
+    <button class="btn secondary small" onclick="closeStudentDetail()">&larr; Back to students</button>
+    <div class="form-card" style="margin-top:14px;">
+      <h3>${escapeHtml(studentName(u))}</h3>
+      <p style="margin:0 0 4px;color:#5b5f63;font-size:14px;">${escapeHtml(u.email||'—')}</p>
+      <p style="margin:0 0 14px;color:#8a8f94;font-size:12.5px;">Joined ${formatDate(u.createdAt)}</p>
+
+      <div class="row2" style="margin-bottom:8px;">
+        <div class="field"><label>Subscription</label>
+          <div><span class="badge ${badge.cls}">${badge.label}</span></div>
+        </div>
+        <div class="field"><label>Expires</label>
+          <div style="padding-top:6px;font-size:14px;">${sub.expiresAt ? formatDate(sub.expiresAt) : '—'}</div>
+        </div>
+      </div>
+
+      <div class="section-title"><span class="tick"></span> Lesson progress</div>
+      ${pairRows}
+    </div>
+  `;
+}
+
+/* =====================================================================
+   5) Add / edit lesson form
+   ===================================================================== */
+function blankLesson(){
+  return {
+    title:'', language: currentPair?.lang || 'german', explanationLanguage: currentPair?.expl || 'dari',
+    level: currentLevel || 'A0', category:'', order: lessons.length+1,
+    status:'draft', coverImageUrl:'',
+    story:{text:'', videoUrl:''},
+    analysis:'',
+    grammarNote:{title:'', explanation:''},
+    secondStory:{text:'', videoUrl:''},
+    roleplayScenario:''
+  };
+}
+
+function openNewLessonForm(){
+  editingId = null;
+  vocabRows = [];
+  exerciseRows = [];
+  renderForm(blankLesson());
+  document.getElementById('formArea').scrollIntoView({behavior:'smooth'});
+}
+
+function normalizeExercises(exercises){
+  return (exercises||[]).map(e=>({
+    question: e.question || '',
+    correctIndex: e.correctIndex || 0,
+    options: [0,1,2,3].map(k => (e.options && e.options[k]) || '')
+  }));
+}
+
+function editLesson(id){
+  const l = lessons.find(x=>x.id===id);
+  if(!l) return;
+  editingId = id;
+  vocabRows = (l.vocabulary||[]).map(v=>({...v}));
+  exerciseRows = normalizeExercises(l.exercises);
+  renderForm(l);
+  document.getElementById('formArea').scrollIntoView({behavior:'smooth'});
+}
+
+function duplicateLesson(id){
+  const l = lessons.find(x=>x.id===id);
+  if(!l) return;
+  editingId = null;
+  vocabRows = (l.vocabulary||[]).map(v=>({...v}));
+  exerciseRows = normalizeExercises(l.exercises);
+  const copy = {...l, title: l.title + ' (Copy)', order: lessons.length+1, status:'draft'};
+  renderForm(copy);
+  document.getElementById('formArea').scrollIntoView({behavior:'smooth'});
+}
+
+function deleteLesson(id){
+  if(!confirm('Delete this lesson permanently?')) return;
+  db.collection('lessons').doc(id).delete().then(()=>showToast('Lesson deleted'));
+}
+
+function renderForm(l){
+  const isGerman = l.language === 'german';
+  document.getElementById('formArea').innerHTML = `
+    <div class="form-card">
+      <h3>${editingId ? 'Edit Lesson' : 'New Lesson'}</h3>
+
+      <div class="row2">
+        <div class="field"><label>Lesson title</label>
+          <input id="f_title" value="${escapeHtml(l.title)}" placeholder="e.g. At the Restaurant"></div>
+        <div class="field"><label>Lesson order number</label>
+          <input id="f_order" type="number" value="${l.order??''}"></div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><label>Language being taught (target)</label>
+          <select id="f_language" onchange="toggleArticleFields(); validateLangPair();">
+            <option value="german" ${l.language==='german'?'selected':''}>German</option>
+            <option value="english" ${l.language==='english'?'selected':''}>English</option>
+            <option value="dari" ${l.language==='dari'?'selected':''}>Dari</option>
+          </select></div>
+        <div class="field"><label>User's native language (who this lesson is for)</label>
+          <select id="f_explanationLanguage" onchange="validateLangPair();">
+            <option value="dari" ${(l.explanationLanguage||'dari')==='dari'?'selected':''}>Dari</option>
+            <option value="english" ${l.explanationLanguage==='english'?'selected':''}>English</option>
+            <option value="german" ${l.explanationLanguage==='german'?'selected':''}>German</option>
+          </select></div>
+      </div>
+      <div id="langPairWarning" style="display:none;color:var(--danger);font-size:13px;margin-bottom:10px;">
+        ⚠️ The native language and target language cannot be the same.
+      </div>
+
+      <div class="row2">
+        <div class="field"><label>Level</label>
+          <select id="f_level">
+            <option value="A0" ${l.level==='A0'?'selected':''}>A0 (Free)</option>
+            <option value="A1" ${l.level==='A1'?'selected':''}>A1 (Paid)</option>
+            <option value="A2" ${l.level==='A2'?'selected':''}>A2 (Paid)</option>
+          </select></div>
+        <div></div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><label>Topic / category</label>
+          <input id="f_category" value="${escapeHtml(l.category)}" placeholder="Shopping, doctor, travel..."></div>
+        <div class="field"><label>Publish status</label>
+          <select id="f_status">
+            <option value="draft" ${l.status==='draft'?'selected':''}>Draft (only I can see it)</option>
+            <option value="published" ${l.status==='published'?'selected':''}>Published (users can see it)</option>
+          </select></div>
+      </div>
+
+      <div class="field"><label>Lesson cover image link (optional)</label>
+        <input id="f_cover" value="${escapeHtml(l.coverImageUrl)}" placeholder="https://..."></div>
+
+      <h3>1. Story</h3>
+      <div class="field"><label>YouTube video link</label>
+        <input id="f_storyVideo" value="${escapeHtml(l.story?.videoUrl)}" placeholder="https://youtube.com/..."></div>
+      <div class="field"><label>Story text</label>
+        <textarea id="f_storyText" rows="4">${escapeHtml(l.story?.text)}</textarea></div>
+
+      <h3>2. Story Analysis (sentence-by-sentence translation)</h3>
+      <div class="field">
+        <textarea id="f_analysis" rows="4" placeholder="Write each sentence on its own line, followed by its translation">${escapeHtml(l.analysis)}</textarea></div>
+
+      <h3>3. Vocabulary</h3>
+      <div id="vocabWrap"></div>
+      <button type="button" class="add-row-btn" onclick="addVocabRow()">+ Add word</button>
+
+      <h3>4. Grammar Note</h3>
+      <div class="field"><label>Note title</label>
+        <input id="f_grammarTitle" value="${escapeHtml(l.grammarNote?.title)}" placeholder="e.g. Present tense"></div>
+      <div class="field"><label>Simple explanation</label>
+        <textarea id="f_grammarExp" rows="3">${escapeHtml(l.grammarNote?.explanation)}</textarea></div>
+
+      <h3>5. Interactive Exercises</h3>
+      <div id="exerciseWrap"></div>
+      <button type="button" class="add-row-btn" onclick="addExerciseRow()">+ Add exercise</button>
+
+      <h3>6. Second Short Story</h3>
+      <div class="field"><label>Video link (optional)</label>
+        <input id="f_story2Video" value="${escapeHtml(l.secondStory?.videoUrl)}"></div>
+      <div class="field"><label>Second story text</label>
+        <textarea id="f_story2Text" rows="4">${escapeHtml(l.secondStory?.text)}</textarea></div>
+
+      <h3>7. AI Conversation Scenario</h3>
+      <div class="field"><label>Conversation topic (for later AI activation)</label>
+        <textarea id="f_roleplay" rows="2" placeholder="e.g. The user plays the customer and the AI plays the shopkeeper">${escapeHtml(l.roleplayScenario)}</textarea></div>
+
+      <div class="form-actions">
+        <button class="btn" onclick="saveLesson()">Save Lesson</button>
+        <button class="btn secondary" onclick="closeForm()">Cancel</button>
+      </div>
+    </div>
+  `;
+  renderVocabRows();
+  renderExerciseRows();
+}
+
+function closeForm(){
+  document.getElementById('formArea').innerHTML = '';
+}
+
+function validateLangPair(){
+  const a = document.getElementById('f_language')?.value;
+  const b = document.getElementById('f_explanationLanguage')?.value;
+  const warn = document.getElementById('langPairWarning');
+  if(!warn) return true;
+  if(a && b && a === b){
+    warn.style.display = 'block';
+    return false;
+  }
+  warn.style.display = 'none';
+  return true;
+}
+
+/* ---- Vocabulary ----
+   Rendered without inline onchange strings: a single delegated
+   'input' listener on the wrapper reads data-idx / data-field
+   attributes. This avoids any edge case where quotes or special
+   characters typed by the user could interfere with an inline
+   JS attribute (this was the root cause of the exercise-options
+   bug below, and vocabulary is rewritten the same safe way). */
+function addVocabRow(){
+  vocabRows.push({word:'', article:'', pronunciation:'', meaningDari:'', example:''});
+  renderVocabRows();
+}
+function removeVocabRow(i){ vocabRows.splice(i,1); renderVocabRows(); }
+function renderVocabRows(){
+  const wrap = document.getElementById('vocabWrap');
+  if(!wrap) return;
+  const isGerman = document.getElementById('f_language')?.value === 'german';
+  wrap.innerHTML = vocabRows.map((v,i)=>`
+    <div class="subitem">
+      <button type="button" class="remove-x" data-action="removeVocab" data-idx="${i}">✕</button>
+      <div class="row2">
+        ${isGerman?`<div class="field"><label>Article</label>
+          <select data-idx="${i}" data-field="article">
+            <option value="" ${!v.article?'selected':''}>—</option>
+            <option value="der" ${v.article==='der'?'selected':''}>der</option>
+            <option value="die" ${v.article==='die'?'selected':''}>die</option>
+            <option value="das" ${v.article==='das'?'selected':''}>das</option>
+          </select></div>`:''}
+        <div class="field"><label>Word</label>
+          <input data-idx="${i}" data-field="word" value="${escapeHtml(v.word)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Pronunciation</label>
+          <input data-idx="${i}" data-field="pronunciation" value="${escapeHtml(v.pronunciation)}"></div>
+        <div class="field"><label>Meaning (in the explanation language)</label>
+          <input data-idx="${i}" data-field="meaningDari" value="${escapeHtml(v.meaningDari)}"></div>
+      </div>
+      <div class="field"><label>Example sentence</label>
+        <input data-idx="${i}" data-field="example" value="${escapeHtml(v.example)}"></div>
+    </div>
+  `).join('') || '<div class="empty-state">No words added yet</div>';
+}
+function toggleArticleFields(){ renderVocabRows(); }
+
+document.addEventListener('input', e=>{
+  const t = e.target;
+  if(t.id === 'studentSearch'){
+    studentSearchQuery = t.value;
+    renderStudentListItems();
+    return;
+  }
+  if(t.closest('#vocabWrap') && t.dataset.field){
+    vocabRows[Number(t.dataset.idx)][t.dataset.field] = t.value;
+  }
+  if(t.closest('#exerciseWrap') && t.dataset.field === 'question'){
+    exerciseRows[Number(t.dataset.idx)].question = t.value;
+  }
+  if(t.closest('#exerciseWrap') && t.dataset.field === 'option'){
+    exerciseRows[Number(t.dataset.idx)].options[Number(t.dataset.optIdx)] = t.value;
+  }
+});
+document.addEventListener('change', e=>{
+  const t = e.target;
+  if(t.closest('#vocabWrap') && t.dataset.field === 'article'){
+    vocabRows[Number(t.dataset.idx)].article = t.value;
+  }
+  if(t.closest('#exerciseWrap') && t.dataset.field === 'correctIndex'){
+    exerciseRows[Number(t.dataset.idx)].correctIndex = Number(t.dataset.optIdx);
+    renderExerciseRows();
+  }
+});
+document.addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-action]');
+  if(!btn) return;
+  const idx = Number(btn.dataset.idx);
+  if(btn.dataset.action === 'removeVocab') removeVocabRow(idx);
+  if(btn.dataset.action === 'removeExercise') removeExerciseRow(idx);
+});
+
+/* ---- Exercises ---- */
+function addExerciseRow(){
+  exerciseRows.push({question:'', options:['','','',''], correctIndex:0});
+  renderExerciseRows();
+}
+function removeExerciseRow(i){ exerciseRows.splice(i,1); renderExerciseRows(); }
+function renderExerciseRows(){
+  const wrap = document.getElementById('exerciseWrap');
+  if(!wrap) return;
+  wrap.innerHTML = exerciseRows.map((e,i)=>`
+    <div class="subitem">
+      <button type="button" class="remove-x" data-action="removeExercise" data-idx="${i}">✕</button>
+      <div class="field"><label>Question</label>
+        <input data-idx="${i}" data-field="question" value="${escapeHtml(e.question)}"></div>
+      ${[0,1,2,3].map(k=>`
+        <div class="field"><label>Option ${k+1} ${e.correctIndex===k?'(correct answer)':''}</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input style="flex:1" data-idx="${i}" data-field="option" data-opt-idx="${k}" value="${escapeHtml(e.options[k]||'')}">
+            <input type="radio" name="correct_${i}" data-idx="${i}" data-field="correctIndex" data-opt-idx="${k}" ${e.correctIndex===k?'checked':''}>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('') || '<div class="empty-state">No exercises added yet</div>';
+}
+
+/* =====================================================================
+   6) Save to Firestore
+   ===================================================================== */
+function saveLesson(){
+  const data = {
+    title: document.getElementById('f_title').value.trim(),
+    order: Number(document.getElementById('f_order').value) || 0,
+    language: document.getElementById('f_language').value,
+    explanationLanguage: document.getElementById('f_explanationLanguage').value,
+    level: document.getElementById('f_level').value,
+    category: document.getElementById('f_category').value.trim(),
+    status: document.getElementById('f_status').value,
+    coverImageUrl: document.getElementById('f_cover').value.trim(),
+    story:{
+      videoUrl: document.getElementById('f_storyVideo').value.trim(),
+      text: document.getElementById('f_storyText').value
+    },
+    analysis: document.getElementById('f_analysis').value,
+    vocabulary: vocabRows,
+    grammarNote:{
+      title: document.getElementById('f_grammarTitle').value.trim(),
+      explanation: document.getElementById('f_grammarExp').value
+    },
+    exercises: exerciseRows,
+    secondStory:{
+      videoUrl: document.getElementById('f_story2Video').value.trim(),
+      text: document.getElementById('f_story2Text').value
+    },
+    roleplayScenario: document.getElementById('f_roleplay').value,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if(!data.title){
+    showToast('Please enter a lesson title');
+    return;
+  }
+  if(data.language === data.explanationLanguage){
+    showToast('The native language and target language cannot be the same');
+    return;
+  }
+
+  const col = db.collection('lessons');
+  const promise = editingId
+    ? col.doc(editingId).update(data)
+    : col.add({...data, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+
+  promise.then(()=>{
+    showToast('Lesson saved ✓');
+    closeForm();
+  }).catch(err=>{
+    showToast('Error: '+err.message);
+  });
+}
+
+/* =====================================================================
+   7) Toast messages
+   ===================================================================== */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
