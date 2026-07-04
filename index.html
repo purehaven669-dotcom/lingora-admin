@@ -1,17 +1,25 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>پنل مدیریت درس‌ها</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lingora Admin Panel</title>
+
+<!-- Icons -->
 <link rel="icon" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- PWA / "installed app" behavior (removes browser address bar when added to Home Screen) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#163963">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Lingora">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lingora Admin">
-<meta name="theme-color" content="#163963">
+<meta name="apple-mobile-web-app-title" content="Lingora">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --sand:#FAF6EF;
@@ -27,10 +35,11 @@
   *{box-sizing:border-box;}
   body{
     margin:0;
-    font-family:'Vazirmatn','Inter',sans-serif;
+    font-family:'Inter',sans-serif;
     background:var(--sand);
     color:var(--ink);
     min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
   }
   .topbar{
     background:var(--lapis-dark);
@@ -91,6 +100,18 @@
   .btn.small{padding:6px 12px;font-size:12.5px;}
   .btn.block{width:100%;}
   #loginError{color:var(--danger);font-size:13px;margin-top:8px;min-height:18px;}
+  .password-wrap{position:relative;}
+  .password-wrap input{padding-right:44px;}
+  .toggle-eye{
+    position:absolute;top:50%;right:10px;transform:translateY(-50%);
+    background:none;border:none;cursor:pointer;color:#77808a;font-size:13px;
+    font-family:inherit;padding:4px 6px;
+  }
+  .toggle-eye:hover{color:var(--lapis);}
+  .remember-row{
+    display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px;color:#5b5f63;
+  }
+  .remember-row input{width:auto;}
 
   /* Lesson list */
   .section-title{
@@ -101,9 +122,9 @@
   .lesson-card{
     background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:10px;
     display:flex;justify-content:space-between;align-items:center;gap:10px;
-    border-right:4px solid var(--turquoise);
+    border-left:4px solid var(--turquoise);
   }
-  .lesson-card.draft{border-right-color:var(--ochre);}
+  .lesson-card.draft{border-left-color:var(--ochre);}
   .lesson-card .info b{display:block;font-size:15px;}
   .lesson-card .info span{font-size:12.5px;color:#77808a;}
   .badge{
@@ -129,7 +150,7 @@
     border:1px solid var(--line);position:relative;
   }
   .subitem .remove-x{
-    position:absolute;top:8px;left:8px;background:none;border:none;
+    position:absolute;top:8px;right:8px;background:none;border:none;
     color:var(--danger);cursor:pointer;font-size:16px;line-height:1;
   }
   .add-row-btn{
@@ -163,16 +184,22 @@
 <div id="loginScreen">
   <div class="login-card">
     <img src="icon-192.png" alt="Lingora" style="width:56px;height:56px;border-radius:14px;margin-bottom:14px;">
-    <h2>ورود به پنل مدیریت</h2>
+    <h2>Sign in to Admin Panel</h2>
     <div class="field">
-      <label>ایمیل</label>
+      <label>Email</label>
       <input type="email" id="loginEmail" placeholder="you@example.com">
     </div>
     <div class="field">
-      <label>رمز عبور</label>
-      <input type="password" id="loginPassword" placeholder="••••••••">
+      <label>Password</label>
+      <div class="password-wrap">
+        <input type="password" id="loginPassword" placeholder="••••••••">
+        <button type="button" class="toggle-eye" id="togglePasswordBtn" onclick="togglePasswordVisibility()">Show</button>
+      </div>
     </div>
-    <button class="btn block" onclick="doLogin()">ورود</button>
+    <label class="remember-row">
+      <input type="checkbox" id="rememberMe"> Remember me on this device
+    </label>
+    <button class="btn block" onclick="doLogin()">Sign In</button>
     <div id="loginError"></div>
   </div>
 </div>
@@ -183,11 +210,11 @@
     <div style="display:flex;align-items:center;gap:10px;">
       <img src="icon-192.png" alt="Lingora" style="width:32px;height:32px;border-radius:8px;">
       <div>
-        <h1>پنل مدیریت درس‌ها</h1>
+        <h1>Lingora Admin Panel</h1>
         <div class="tile-rule"></div>
       </div>
     </div>
-    <button id="logoutBtn" onclick="doLogout()">خروج</button>
+    <button id="logoutBtn" onclick="doLogout()">Sign Out</button>
   </div>
 
   <div class="wrap">
@@ -196,7 +223,7 @@
     <div id="formArea"></div>
   </div>
 
-  <button class="fab-new hidden" id="fabNew" onclick="openNewLessonForm()">+ درس جدید</button>
+  <button class="fab-new hidden" id="fabNew" onclick="openNewLessonForm()">+ New Lesson</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -208,9 +235,9 @@
 
 <script>
 /* =====================================================================
-   ۱) پیکربندی Firebase
-   این مقادیر را از Firebase Console بگیر:
-   Project settings → General → Your apps → SDK setup and configuration
+   1) Firebase configuration
+   Get these values from Firebase Console:
+   Project settings -> General -> Your apps -> SDK setup and configuration
    ===================================================================== */
 const firebaseConfig = {
   apiKey: "AIzaSyBvkz9wxSd9IOyVRc58oSsPsfTEc-gW8Is",
@@ -226,37 +253,81 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 /* =====================================================================
-   ۲) وضعیت برنامه
+   2) App state
    ===================================================================== */
-let lessons = [];        // همه‌ی درس‌ها از Firestore
-let editingId = null;    // اگر در حال ویرایش درسی هستیم، آی‌دی آن
-let vocabRows = [];      // ردیف‌های لغت در فرم جاری
-let exerciseRows = [];   // ردیف‌های تمرین در فرم جاری
+let lessons = [];        // all lessons loaded from Firestore
+let editingId = null;    // id of the lesson currently being edited, if any
+let vocabRows = [];      // vocabulary rows in the current form
+let exerciseRows = [];   // exercise rows in the current form
 
-/* ناوبری فولدری: صفحه اصلی (خانه) یا داخل یک مسیر زبانی */
+/* Folder-style navigation: home screen, or inside a language path */
 let currentView = 'home';      // 'home' | 'pair'
 let currentPair = null;        // {expl:'dari', lang:'english'}
 let currentLevel = 'A0';       // 'A0' | 'A1' | 'A2'
 
-const LANG_LABEL = {german:'آلمانی', english:'انگلیسی', dari:'دری'};
+const LANG_LABEL = {german:'German', english:'English', dari:'Dari'};
 const ALL_PAIRS = [
   {expl:'dari', lang:'english'}, {expl:'english', lang:'dari'},
   {expl:'dari', lang:'german'},  {expl:'german', lang:'dari'},
   {expl:'english', lang:'german'}, {expl:'german', lang:'english'}
 ];
 function pairKey(p){ return p.expl + '-' + p.lang; }
-function pairLabel(p){ return LANG_LABEL[p.expl] + ' ← ' + LANG_LABEL[p.lang]; }
+function pairLabel(p){ return LANG_LABEL[p.expl] + ' -> ' + LANG_LABEL[p.lang]; }
 
 /* =====================================================================
-   ۳) ورود / خروج
+   3) Sign in / Sign out + Remember me + Show password
    ===================================================================== */
+const REMEMBER_KEY = 'lingoraRememberedLogin';
+
+function togglePasswordVisibility(){
+  const pw = document.getElementById('loginPassword');
+  const btn = document.getElementById('togglePasswordBtn');
+  if(pw.type === 'password'){
+    pw.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    pw.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
+
+function loadRememberedLogin(){
+  try{
+    const raw = localStorage.getItem(REMEMBER_KEY);
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(data.email) document.getElementById('loginEmail').value = data.email;
+    if(data.password) document.getElementById('loginPassword').value = atob(data.password);
+    document.getElementById('rememberMe').checked = true;
+  }catch(e){ /* ignore malformed storage */ }
+}
+
+function saveRememberedLogin(email, password, remember){
+  if(remember){
+    localStorage.setItem(REMEMBER_KEY, JSON.stringify({ email, password: btoa(password) }));
+  } else {
+    localStorage.removeItem(REMEMBER_KEY);
+  }
+}
+
 function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPassword').value;
+  const remember = document.getElementById('rememberMe').checked;
   document.getElementById('loginError').textContent = '';
-  auth.signInWithEmailAndPassword(email, pass).catch(err=>{
-    document.getElementById('loginError').textContent = 'ورود ناموفق: ایمیل یا رمز اشتباه است.';
-  });
+
+  const persistence = remember
+    ? firebase.auth.Auth.Persistence.LOCAL
+    : firebase.auth.Auth.Persistence.SESSION;
+
+  auth.setPersistence(persistence)
+    .then(()=> auth.signInWithEmailAndPassword(email, pass))
+    .then(()=>{
+      saveRememberedLogin(email, pass, remember);
+    })
+    .catch(err=>{
+      document.getElementById('loginError').textContent = 'Sign in failed: incorrect email or password.';
+    });
 }
 function doLogout(){ auth.signOut(); }
 
@@ -268,11 +339,12 @@ auth.onAuthStateChanged(user=>{
   } else {
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('app').classList.add('hidden');
+    loadRememberedLogin();
   }
 });
 
 /* =====================================================================
-   ۴) خواندن فهرست درس‌ها
+   4) Reading the lesson list
    ===================================================================== */
 function loadLessons(){
   db.collection('lessons').orderBy('order','asc').onSnapshot(snap=>{
@@ -281,7 +353,7 @@ function loadLessons(){
     renderMain();
   }, err=>{
     document.getElementById('mainArea').innerHTML =
-      '<div class="empty-state">خطا در خواندن اطلاعات: '+err.message+'</div>';
+      '<div class="empty-state">Error reading data: '+err.message+'</div>';
   });
 }
 
@@ -296,11 +368,11 @@ function renderMain(){
   }
 }
 
-/* ---- صفحه اصلی: فولدرهای ۶ مسیر زبانی ---- */
+/* ---- Home screen: folders for the 6 language paths ---- */
 function renderHome(){
   const wrap = document.getElementById('mainArea');
   wrap.innerHTML = `
-    <div class="section-title"><span class="tick"></span> مسیرهای زبانی</div>
+    <div class="section-title"><span class="tick"></span> Language Paths</div>
     <div id="folderGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
   `;
   const grid = document.getElementById('folderGrid');
@@ -311,7 +383,7 @@ function renderHome(){
     return `
       <div class="lesson-card" style="flex-direction:column;align-items:flex-start;cursor:pointer;" onclick="openPair('${p.expl}','${p.lang}')">
         <b style="font-size:15px;">${pairLabel(p)}</b>
-        <span style="font-size:12.5px;color:#77808a;margin-top:4px;">${count} درس · ${published} منتشرشده</span>
+        <span style="font-size:12.5px;color:#77808a;margin-top:4px;">${count} lessons - ${published} published</span>
       </div>
     `;
   }).join('');
@@ -330,16 +402,16 @@ function goHome(){
   renderMain();
 }
 
-/* ---- صفحه داخل یک مسیر: تب‌های A0 / A1 / A2 ---- */
+/* ---- Inside a path: A0 / A1 / A2 tabs ---- */
 function renderPairView(){
   const wrap = document.getElementById('mainArea');
   const levels = ['A0','A1','A2'];
   wrap.innerHTML = `
-    <button class="btn secondary small" onclick="goHome()">← بازگشت به مسیرها</button>
+    <button class="btn secondary small" onclick="goHome()">&larr; Back to paths</button>
     <div class="section-title" style="margin-top:16px;"><span class="tick"></span> ${pairLabel(currentPair)}</div>
     <div style="display:flex;gap:8px;margin-bottom:14px;">
       ${levels.map(lv=>`
-        <button class="btn ${lv===currentLevel?'':'secondary'} small" onclick="setLevel('${lv}')">${lv}${lv==='A0'?' (رایگان)':' (پولی)'}</button>
+        <button class="btn ${lv===currentLevel?'':'secondary'} small" onclick="setLevel('${lv}')">${lv}${lv==='A0'?' (Free)':' (Paid)'}</button>
       `).join('')}
     </div>
     <div id="lessonList"></div>
@@ -361,20 +433,20 @@ function renderLessonList(){
     l.level===currentLevel
   );
   if(filtered.length === 0){
-    wrap.innerHTML = '<div class="empty-state">هنوز درسی در این سطح اضافه نشده. با دکمه «+ درس جدید» شروع کن.</div>';
+    wrap.innerHTML = '<div class="empty-state">No lessons yet at this level. Start with the "+ New Lesson" button.</div>';
     return;
   }
   wrap.innerHTML = filtered.map(l=>`
     <div class="lesson-card ${l.status==='draft'?'draft':''}">
       <div class="info">
-        <b>${escapeHtml(l.title||'(بدون عنوان)')}</b>
-        <span>${escapeHtml(l.category||'')} · شماره ${l.order??''}</span>
+        <b>${escapeHtml(l.title||'(Untitled)')}</b>
+        <span>${escapeHtml(l.category||'')} - #${l.order??''}</span>
       </div>
       <div class="lesson-actions">
-        <span class="badge ${l.status==='draft'?'draft':''}">${l.status==='draft'?'پیش‌نویس':'منتشرشده'}</span>
-        <button class="btn small secondary" onclick="editLesson('${l.id}')">ویرایش</button>
-        <button class="btn small secondary" onclick="duplicateLesson('${l.id}')">کپی</button>
-        <button class="btn small danger" onclick="deleteLesson('${l.id}')">حذف</button>
+        <span class="badge ${l.status==='draft'?'draft':''}">${l.status==='draft'?'Draft':'Published'}</span>
+        <button class="btn small secondary" onclick="editLesson('${l.id}')">Edit</button>
+        <button class="btn small secondary" onclick="duplicateLesson('${l.id}')">Duplicate</button>
+        <button class="btn small danger" onclick="deleteLesson('${l.id}')">Delete</button>
       </div>
     </div>
   `).join('');
@@ -385,7 +457,7 @@ function escapeHtml(s){
 }
 
 /* =====================================================================
-   ۵) فرم افزودن / ویرایش درس
+   5) Add / edit lesson form
    ===================================================================== */
 function blankLesson(){
   return {
@@ -408,12 +480,20 @@ function openNewLessonForm(){
   document.getElementById('formArea').scrollIntoView({behavior:'smooth'});
 }
 
+function normalizeExercises(exercises){
+  return (exercises||[]).map(e=>({
+    question: e.question || '',
+    correctIndex: e.correctIndex || 0,
+    options: [0,1,2,3].map(k => (e.options && e.options[k]) || '')
+  }));
+}
+
 function editLesson(id){
   const l = lessons.find(x=>x.id===id);
   if(!l) return;
   editingId = id;
   vocabRows = (l.vocabulary||[]).map(v=>({...v}));
-  exerciseRows = (l.exercises||[]).map(e=>({...e}));
+  exerciseRows = normalizeExercises(l.exercises);
   renderForm(l);
   document.getElementById('formArea').scrollIntoView({behavior:'smooth'});
 }
@@ -423,108 +503,108 @@ function duplicateLesson(id){
   if(!l) return;
   editingId = null;
   vocabRows = (l.vocabulary||[]).map(v=>({...v}));
-  exerciseRows = (l.exercises||[]).map(e=>({...e}));
-  const copy = {...l, title: l.title + ' (کپی)', order: lessons.length+1, status:'draft'};
+  exerciseRows = normalizeExercises(l.exercises);
+  const copy = {...l, title: l.title + ' (Copy)', order: lessons.length+1, status:'draft'};
   renderForm(copy);
   document.getElementById('formArea').scrollIntoView({behavior:'smooth'});
 }
 
 function deleteLesson(id){
-  if(!confirm('این درس برای همیشه حذف شود؟')) return;
-  db.collection('lessons').doc(id).delete().then(()=>showToast('درس حذف شد'));
+  if(!confirm('Delete this lesson permanently?')) return;
+  db.collection('lessons').doc(id).delete().then(()=>showToast('Lesson deleted'));
 }
 
 function renderForm(l){
   const isGerman = l.language === 'german';
   document.getElementById('formArea').innerHTML = `
     <div class="form-card">
-      <h3>${editingId ? 'ویرایش درس' : 'درس جدید'}</h3>
+      <h3>${editingId ? 'Edit Lesson' : 'New Lesson'}</h3>
 
       <div class="row2">
-        <div class="field"><label>عنوان درس</label>
-          <input id="f_title" value="${escapeHtml(l.title)}" placeholder="مثلاً: در رستوران"></div>
-        <div class="field"><label>شماره ترتیب درس</label>
+        <div class="field"><label>Lesson title</label>
+          <input id="f_title" value="${escapeHtml(l.title)}" placeholder="e.g. At the Restaurant"></div>
+        <div class="field"><label>Lesson order number</label>
           <input id="f_order" type="number" value="${l.order??''}"></div>
       </div>
 
       <div class="row2">
-        <div class="field"><label>زبانی که آموزش داده می‌شود (هدف)</label>
+        <div class="field"><label>Language being taught (target)</label>
           <select id="f_language" onchange="toggleArticleFields(); validateLangPair();">
-            <option value="german" ${l.language==='german'?'selected':''}>آلمانی</option>
-            <option value="english" ${l.language==='english'?'selected':''}>انگلیسی</option>
-            <option value="dari" ${l.language==='dari'?'selected':''}>دری</option>
+            <option value="german" ${l.language==='german'?'selected':''}>German</option>
+            <option value="english" ${l.language==='english'?'selected':''}>English</option>
+            <option value="dari" ${l.language==='dari'?'selected':''}>Dari</option>
           </select></div>
-        <div class="field"><label>زبان مادری کاربر (این درس برای چه کسانی است)</label>
+        <div class="field"><label>User's native language (who this lesson is for)</label>
           <select id="f_explanationLanguage" onchange="validateLangPair();">
-            <option value="dari" ${(l.explanationLanguage||'dari')==='dari'?'selected':''}>دری</option>
-            <option value="english" ${l.explanationLanguage==='english'?'selected':''}>انگلیسی</option>
-            <option value="german" ${l.explanationLanguage==='german'?'selected':''}>آلمانی</option>
+            <option value="dari" ${(l.explanationLanguage||'dari')==='dari'?'selected':''}>Dari</option>
+            <option value="english" ${l.explanationLanguage==='english'?'selected':''}>English</option>
+            <option value="german" ${l.explanationLanguage==='german'?'selected':''}>German</option>
           </select></div>
       </div>
       <div id="langPairWarning" style="display:none;color:var(--danger);font-size:13px;margin-bottom:10px;">
-        ⚠️ زبان مادری و زبان هدف نمی‌توانند یکی باشند.
+        ⚠️ The native language and target language cannot be the same.
       </div>
 
       <div class="row2">
-        <div class="field"><label>سطح</label>
+        <div class="field"><label>Level</label>
           <select id="f_level">
-            <option value="A0" ${l.level==='A0'?'selected':''}>A0 (رایگان)</option>
-            <option value="A1" ${l.level==='A1'?'selected':''}>A1 (پولی)</option>
-            <option value="A2" ${l.level==='A2'?'selected':''}>A2 (پولی)</option>
+            <option value="A0" ${l.level==='A0'?'selected':''}>A0 (Free)</option>
+            <option value="A1" ${l.level==='A1'?'selected':''}>A1 (Paid)</option>
+            <option value="A2" ${l.level==='A2'?'selected':''}>A2 (Paid)</option>
           </select></div>
         <div></div>
       </div>
 
       <div class="row2">
-        <div class="field"><label>موضوع / دسته</label>
-          <input id="f_category" value="${escapeHtml(l.category)}" placeholder="خرید، دکتر، سفر..."></div>
-        <div class="field"><label>وضعیت انتشار</label>
+        <div class="field"><label>Topic / category</label>
+          <input id="f_category" value="${escapeHtml(l.category)}" placeholder="Shopping, doctor, travel..."></div>
+        <div class="field"><label>Publish status</label>
           <select id="f_status">
-            <option value="draft" ${l.status==='draft'?'selected':''}>پیش‌نویس (فقط خودم می‌بینم)</option>
-            <option value="published" ${l.status==='published'?'selected':''}>منتشرشده (کاربران می‌بینند)</option>
+            <option value="draft" ${l.status==='draft'?'selected':''}>Draft (only I can see it)</option>
+            <option value="published" ${l.status==='published'?'selected':''}>Published (users can see it)</option>
           </select></div>
       </div>
 
-      <div class="field"><label>لینک تصویر کاور درس (اختیاری)</label>
+      <div class="field"><label>Lesson cover image link (optional)</label>
         <input id="f_cover" value="${escapeHtml(l.coverImageUrl)}" placeholder="https://..."></div>
 
-      <h3>۱. داستان</h3>
-      <div class="field"><label>لینک ویدیو یوتیوب</label>
+      <h3>1. Story</h3>
+      <div class="field"><label>YouTube video link</label>
         <input id="f_storyVideo" value="${escapeHtml(l.story?.videoUrl)}" placeholder="https://youtube.com/..."></div>
-      <div class="field"><label>متن داستان</label>
+      <div class="field"><label>Story text</label>
         <textarea id="f_storyText" rows="4">${escapeHtml(l.story?.text)}</textarea></div>
 
-      <h3>۲. تحلیل داستان (ترجمه جمله‌به‌جمله)</h3>
+      <h3>2. Story Analysis (sentence-by-sentence translation)</h3>
       <div class="field">
-        <textarea id="f_analysis" rows="4" placeholder="هر جمله را در یک خط بنویس، بعد ترجمه دری‌اش را">${escapeHtml(l.analysis)}</textarea></div>
+        <textarea id="f_analysis" rows="4" placeholder="Write each sentence on its own line, followed by its translation">${escapeHtml(l.analysis)}</textarea></div>
 
-      <h3>۳. لغات</h3>
+      <h3>3. Vocabulary</h3>
       <div id="vocabWrap"></div>
-      <button type="button" class="add-row-btn" onclick="addVocabRow()">+ افزودن لغت</button>
+      <button type="button" class="add-row-btn" onclick="addVocabRow()">+ Add word</button>
 
-      <h3>۴. نکته گرامری</h3>
-      <div class="field"><label>عنوان نکته</label>
-        <input id="f_grammarTitle" value="${escapeHtml(l.grammarNote?.title)}" placeholder="مثلاً: زمان حال"></div>
-      <div class="field"><label>توضیح ساده</label>
+      <h3>4. Grammar Note</h3>
+      <div class="field"><label>Note title</label>
+        <input id="f_grammarTitle" value="${escapeHtml(l.grammarNote?.title)}" placeholder="e.g. Present tense"></div>
+      <div class="field"><label>Simple explanation</label>
         <textarea id="f_grammarExp" rows="3">${escapeHtml(l.grammarNote?.explanation)}</textarea></div>
 
-      <h3>۵. تمرین‌های تعاملی</h3>
+      <h3>5. Interactive Exercises</h3>
       <div id="exerciseWrap"></div>
-      <button type="button" class="add-row-btn" onclick="addExerciseRow()">+ افزودن تمرین</button>
+      <button type="button" class="add-row-btn" onclick="addExerciseRow()">+ Add exercise</button>
 
-      <h3>۶. داستان کوتاه دوم</h3>
-      <div class="field"><label>لینک ویدیو (اختیاری)</label>
+      <h3>6. Second Short Story</h3>
+      <div class="field"><label>Video link (optional)</label>
         <input id="f_story2Video" value="${escapeHtml(l.secondStory?.videoUrl)}"></div>
-      <div class="field"><label>متن داستان دوم</label>
+      <div class="field"><label>Second story text</label>
         <textarea id="f_story2Text" rows="4">${escapeHtml(l.secondStory?.text)}</textarea></div>
 
-      <h3>۷. سناریوی مکالمه با AI</h3>
-      <div class="field"><label>موضوع مکالمه (برای فعال‌سازی بعدی AI)</label>
-        <textarea id="f_roleplay" rows="2" placeholder="مثلاً: کاربر نقش مشتری و AI نقش فروشنده را بازی می‌کند">${escapeHtml(l.roleplayScenario)}</textarea></div>
+      <h3>7. AI Conversation Scenario</h3>
+      <div class="field"><label>Conversation topic (for later AI activation)</label>
+        <textarea id="f_roleplay" rows="2" placeholder="e.g. The user plays the customer and the AI plays the shopkeeper">${escapeHtml(l.roleplayScenario)}</textarea></div>
 
       <div class="form-actions">
-        <button class="btn" onclick="saveLesson()">ذخیره درس</button>
-        <button class="btn secondary" onclick="closeForm()">انصراف</button>
+        <button class="btn" onclick="saveLesson()">Save Lesson</button>
+        <button class="btn secondary" onclick="closeForm()">Cancel</button>
       </div>
     </div>
   `;
@@ -549,7 +629,13 @@ function validateLangPair(){
   return true;
 }
 
-/* ---- لغات ---- */
+/* ---- Vocabulary ----
+   Rendered without inline onchange strings: a single delegated
+   'input' listener on the wrapper reads data-idx / data-field
+   attributes. This avoids any edge case where quotes or special
+   characters typed by the user could interfere with an inline
+   JS attribute (this was the root cause of the exercise-options
+   bug below, and vocabulary is rewritten the same safe way). */
 function addVocabRow(){
   vocabRows.push({word:'', article:'', pronunciation:'', meaningDari:'', example:''});
   renderVocabRows();
@@ -561,32 +647,62 @@ function renderVocabRows(){
   const isGerman = document.getElementById('f_language')?.value === 'german';
   wrap.innerHTML = vocabRows.map((v,i)=>`
     <div class="subitem">
-      <button type="button" class="remove-x" onclick="removeVocabRow(${i})">✕</button>
+      <button type="button" class="remove-x" data-action="removeVocab" data-idx="${i}">✕</button>
       <div class="row2">
-        ${isGerman?`<div class="field"><label>آرتیکل</label>
-          <select onchange="vocabRows[${i}].article=this.value">
+        ${isGerman?`<div class="field"><label>Article</label>
+          <select data-idx="${i}" data-field="article">
             <option value="" ${!v.article?'selected':''}>—</option>
             <option value="der" ${v.article==='der'?'selected':''}>der</option>
             <option value="die" ${v.article==='die'?'selected':''}>die</option>
             <option value="das" ${v.article==='das'?'selected':''}>das</option>
           </select></div>`:''}
-        <div class="field"><label>لغت</label>
-          <input value="${escapeHtml(v.word)}" onchange="vocabRows[${i}].word=this.value"></div>
+        <div class="field"><label>Word</label>
+          <input data-idx="${i}" data-field="word" value="${escapeHtml(v.word)}"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>تلفظ</label>
-          <input value="${escapeHtml(v.pronunciation)}" onchange="vocabRows[${i}].pronunciation=this.value"></div>
-        <div class="field"><label>معنی (به زبان توضیحات)</label>
-          <input value="${escapeHtml(v.meaningDari)}" onchange="vocabRows[${i}].meaningDari=this.value"></div>
+        <div class="field"><label>Pronunciation</label>
+          <input data-idx="${i}" data-field="pronunciation" value="${escapeHtml(v.pronunciation)}"></div>
+        <div class="field"><label>Meaning (in the explanation language)</label>
+          <input data-idx="${i}" data-field="meaningDari" value="${escapeHtml(v.meaningDari)}"></div>
       </div>
-      <div class="field"><label>جمله مثال</label>
-        <input value="${escapeHtml(v.example)}" onchange="vocabRows[${i}].example=this.value"></div>
+      <div class="field"><label>Example sentence</label>
+        <input data-idx="${i}" data-field="example" value="${escapeHtml(v.example)}"></div>
     </div>
-  `).join('') || '<div class="empty-state">هنوز لغتی اضافه نشده</div>';
+  `).join('') || '<div class="empty-state">No words added yet</div>';
 }
 function toggleArticleFields(){ renderVocabRows(); }
 
-/* ---- تمرین‌ها ---- */
+document.addEventListener('input', e=>{
+  const t = e.target;
+  if(t.closest('#vocabWrap') && t.dataset.field){
+    vocabRows[Number(t.dataset.idx)][t.dataset.field] = t.value;
+  }
+  if(t.closest('#exerciseWrap') && t.dataset.field === 'question'){
+    exerciseRows[Number(t.dataset.idx)].question = t.value;
+  }
+  if(t.closest('#exerciseWrap') && t.dataset.field === 'option'){
+    exerciseRows[Number(t.dataset.idx)].options[Number(t.dataset.optIdx)] = t.value;
+  }
+});
+document.addEventListener('change', e=>{
+  const t = e.target;
+  if(t.closest('#vocabWrap') && t.dataset.field === 'article'){
+    vocabRows[Number(t.dataset.idx)].article = t.value;
+  }
+  if(t.closest('#exerciseWrap') && t.dataset.field === 'correctIndex'){
+    exerciseRows[Number(t.dataset.idx)].correctIndex = Number(t.dataset.optIdx);
+    renderExerciseRows();
+  }
+});
+document.addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-action]');
+  if(!btn) return;
+  const idx = Number(btn.dataset.idx);
+  if(btn.dataset.action === 'removeVocab') removeVocabRow(idx);
+  if(btn.dataset.action === 'removeExercise') removeExerciseRow(idx);
+});
+
+/* ---- Exercises ---- */
 function addExerciseRow(){
   exerciseRows.push({question:'', options:['','','',''], correctIndex:0});
   renderExerciseRows();
@@ -597,23 +713,23 @@ function renderExerciseRows(){
   if(!wrap) return;
   wrap.innerHTML = exerciseRows.map((e,i)=>`
     <div class="subitem">
-      <button type="button" class="remove-x" onclick="removeExerciseRow(${i})">✕</button>
-      <div class="field"><label>سوال</label>
-        <input value="${escapeHtml(e.question)}" onchange="exerciseRows[${i}].question=this.value"></div>
+      <button type="button" class="remove-x" data-action="removeExercise" data-idx="${i}">✕</button>
+      <div class="field"><label>Question</label>
+        <input data-idx="${i}" data-field="question" value="${escapeHtml(e.question)}"></div>
       ${[0,1,2,3].map(k=>`
-        <div class="field"><label>گزینه ${k+1} ${e.correctIndex===k?'(پاسخ درست)':''}</label>
+        <div class="field"><label>Option ${k+1} ${e.correctIndex===k?'(correct answer)':''}</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input style="flex:1" value="${escapeHtml(e.options[k]||'')}" onchange="exerciseRows[${i}].options[${k}]=this.value">
-            <input type="radio" name="correct_${i}" ${e.correctIndex===k?'checked':''} onchange="exerciseRows[${i}].correctIndex=${k}; renderExerciseRows();">
+            <input style="flex:1" data-idx="${i}" data-field="option" data-opt-idx="${k}" value="${escapeHtml(e.options[k]||'')}">
+            <input type="radio" name="correct_${i}" data-idx="${i}" data-field="correctIndex" data-opt-idx="${k}" ${e.correctIndex===k?'checked':''}>
           </div>
         </div>
       `).join('')}
     </div>
-  `).join('') || '<div class="empty-state">هنوز تمرینی اضافه نشده</div>';
+  `).join('') || '<div class="empty-state">No exercises added yet</div>';
 }
 
 /* =====================================================================
-   ۶) ذخیره در Firestore
+   6) Save to Firestore
    ===================================================================== */
 function saveLesson(){
   const data = {
@@ -645,11 +761,11 @@ function saveLesson(){
   };
 
   if(!data.title){
-    showToast('عنوان درس را وارد کن');
+    showToast('Please enter a lesson title');
     return;
   }
   if(data.language === data.explanationLanguage){
-    showToast('زبان مادری و زبان هدف نمی‌توانند یکی باشند');
+    showToast('The native language and target language cannot be the same');
     return;
   }
 
@@ -659,15 +775,15 @@ function saveLesson(){
     : col.add({...data, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
 
   promise.then(()=>{
-    showToast('درس ذخیره شد ✓');
+    showToast('Lesson saved ✓');
     closeForm();
   }).catch(err=>{
-    showToast('خطا: '+err.message);
+    showToast('Error: '+err.message);
   });
 }
 
 /* =====================================================================
-   ۷) پیام‌های کوتاه (Toast)
+   7) Toast messages
    ===================================================================== */
 function showToast(msg){
   const t = document.getElementById('toast');
